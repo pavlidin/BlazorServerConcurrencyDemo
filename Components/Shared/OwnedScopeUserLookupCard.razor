@@ -1,0 +1,32 @@
+@inherits Microsoft.AspNetCore.Components.OwningComponentBase<IScopedUserService>
+
+<UserLookupStatusCard
+    Title="@Title"
+    UserId="@UserId"
+    ServiceDisplayName="IScopedUserService"
+    CardCssClass="card h-100 shadow-sm border-primary"
+    Result="@_result"
+    ErrorMessage="@_errorMessage" />
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public int UserId { get; set; }
+
+    private UserLookupResult? _result;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _result = await Service.FindUserByIdAsync(UserId);
+        }
+        catch (InvalidOperationException exception)
+        {
+            _errorMessage = exception.Message;
+        }
+    }
+}

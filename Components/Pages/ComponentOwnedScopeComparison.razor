@@ -1,0 +1,54 @@
+@page "/component-owned-scope"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Component-owned scope</PageTitle>
+
+<h1>Component-owned scope</h1>
+
+<p class="lead">
+    This page keeps using the same scoped <code>IScopedUserService</code> that directly injects
+    <code>AppDbContext</code>. The difference is that each card owns its own DI scope, so each card gets its own
+    scoped service instance and its own scoped <code>DbContext</code>.
+</p>
+
+<div class="alert alert-primary" role="alert">
+    Expected result: all cards should succeed, and the service IDs and DbContext IDs should differ between cards because
+    each component has its own scope.
+</div>
+
+<div class="card border-primary shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h4">Why this is safe</h2>
+        <p>
+            In normal Blazor Server behavior, scoped services are shared across the whole circuit. By switching each
+            child component to an owned scope, the scoped service stops being circuit-wide for that component and becomes
+            <strong>component-local</strong> instead.
+        </p>
+        <p class="mb-0">
+            That means the service can still directly inject <code>AppDbContext</code>, but the injected context is no
+            longer shared across sibling components. The components can all load concurrently because they no longer
+            compete for one shared context instance.
+        </p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+    <div class="col">
+        <OwnedScopeUserLookupCard Title="Component A" UserId="1" />
+    </div>
+    <div class="col">
+        <OwnedScopeUserLookupCard Title="Component B" UserId="2" />
+    </div>
+    <div class="col">
+        <OwnedScopeUserLookupCard Title="Component C" UserId="3" />
+    </div>
+    <div class="col">
+        <OwnedScopeUserLookupCard Title="Component D" UserId="4" />
+    </div>
+    <div class="col">
+        <OwnedScopeUserLookupCard Title="Component E" UserId="5" />
+    </div>
+    <div class="col">
+        <OwnedScopeUserLookupCard Title="Component F" UserId="6" />
+    </div>
+</div>

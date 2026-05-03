@@ -1,0 +1,37 @@
+@page "/dbcontext-factory-comparison"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>DbContext factory comparison</PageTitle>
+
+<h1>DbContext factory comparison</h1>
+
+<p class="lead">
+    This page keeps the same component fan-out and the same scoped service lifetime, but each lookup creates a fresh
+    EF Core <code>AppDbContext</code> through <code>IDbContextFactory&lt;AppDbContext&gt;</code>.
+</p>
+
+<div class="alert alert-success" role="alert">
+    Expected result: all cards should load successfully, and the <code>DbContext ID</code> values should differ between
+    cards even though the service ID stays the same within the circuit.
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+    <div class="col">
+        <FactoryUserLookupCard Title="Component A" UserId="1" />
+    </div>
+    <div class="col">
+        <FactoryUserLookupCard Title="Component B" UserId="2" />
+    </div>
+    <div class="col">
+        <FactoryUserLookupCard Title="Component C" UserId="3" />
+    </div>
+    <div class="col">
+        <FactoryUserLookupCard Title="Component D" UserId="4" />
+    </div>
+    <div class="col">
+        <FactoryUserLookupCard Title="Component E" UserId="5" />
+    </div>
+    <div class="col">
+        <FactoryUserLookupCard Title="Component F" UserId="6" />
+    </div>
+</div>

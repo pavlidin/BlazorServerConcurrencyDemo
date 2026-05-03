@@ -1,0 +1,53 @@
+@page "/serialized-scoped-dbcontext"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Serialized shared DbContext</PageTitle>
+
+<h1>Serialized shared DbContext</h1>
+
+<p class="lead">
+    This page keeps the same Blazor Server setup, the same scoped service idea, and the same injected scoped
+    <code>AppDbContext</code>. The difference is that the service uses a <code>SemaphoreSlim</code> to ensure only one
+    database operation touches the shared context at a time.
+</p>
+
+<div class="alert alert-info" role="alert">
+    Expected result: all cards should succeed, and they should all show the <strong>same</strong> service ID and the
+    <strong>same</strong> DbContext ID. The tradeoff is that the work is now queued instead of truly concurrent.
+</div>
+
+<div class="card border-info shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h4">Why this is safe</h2>
+        <p>
+            The shared <code>DbContext</code> instance still exists, but the service no longer lets two operations use
+            it at the same time. In other words, this pattern fixes the problem by <strong>serializing access</strong>,
+            not by creating more contexts.
+        </p>
+        <p class="mb-0">
+            This works only if <strong>every</strong> method that touches that shared context goes through the same
+            gate. If one code path bypasses the gate, the concurrency issue can come back.
+        </p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+    <div class="col">
+        <SerializedScopedUserLookupCard Title="Component A" UserId="1" />
+    </div>
+    <div class="col">
+        <SerializedScopedUserLookupCard Title="Component B" UserId="2" />
+    </div>
+    <div class="col">
+        <SerializedScopedUserLookupCard Title="Component C" UserId="3" />
+    </div>
+    <div class="col">
+        <SerializedScopedUserLookupCard Title="Component D" UserId="4" />
+    </div>
+    <div class="col">
+        <SerializedScopedUserLookupCard Title="Component E" UserId="5" />
+    </div>
+    <div class="col">
+        <SerializedScopedUserLookupCard Title="Component F" UserId="6" />
+    </div>
+</div>

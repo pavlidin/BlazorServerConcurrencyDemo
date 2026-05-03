@@ -1,0 +1,93 @@
+@page "/scoped-dbcontext-repro"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Scoped DbContext repro</PageTitle>
+
+<h1>Scoped DbContext repro</h1>
+
+<p class="lead">
+    Every card below is its own component. Each one calls the same scoped user service from
+    <code>OnInitializedAsync</code>, and that scoped service holds the same scoped EF Core <code>AppDbContext</code>.
+</p>
+
+<div class="alert alert-warning" role="alert">
+    Expected result: one or more cards should show EF Core's
+    <code>A second operation was started on this context instance...</code> message because the components overlap on
+    the same <code>DbContext</code>.
+</div>
+
+<div class="card border-warning shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h4">Why this happens</h2>
+
+        <p>
+            The important detail is that in <strong>Blazor Server</strong>, a <strong>scoped</strong> service is usually
+            scoped to the user's <strong>circuit</strong>, not to one component. That means all of the components on this
+            page can receive the <strong>same</strong> <code>IScopedUserService</code> instance.
+        </p>
+
+        <p>
+            In this demo, that shared service also holds a shared scoped <code>AppDbContext</code>. When several
+            components start loading at nearly the same time, they all call into the same service, which means they all
+            try to use the same <code>DbContext</code> instance at the same time.
+        </p>
+
+        <p>
+            EF Core <code>DbContext</code> is <strong>not thread-safe</strong> and does <strong>not</strong> allow
+            multiple operations to run on the same instance concurrently. As soon as one query is still in flight and
+            another component starts a second query on that same instance, EF Core throws the concurrency exception.
+        </p>
+
+        <h3 class="h5 mt-4">So who is "at fault"?</h3>
+
+        <p class="mb-2">
+            Usually it is <strong>not just one thing</strong>. The failure comes from this combination:
+        </p>
+
+        <ol class="mb-3">
+            <li>Blazor Server shares scoped services across components in the same circuit.</li>
+            <li>The user service stores a scoped <code>DbContext</code>, so that context is shared too.</li>
+            <li>Multiple components call the service concurrently from <code>OnInitializedAsync</code>.</li>
+            <li>EF Core rejects concurrent use of one <code>DbContext</code> instance.</li>
+        </ol>
+
+        <p>
+            So the real issue is <strong>concurrent use of one shared <code>DbContext</code> instance</strong>. The
+            service lifetime and the injected <code>DbContext</code> lifetime are both part of the chain, but the
+            actual rule being broken is: <strong>one <code>DbContext</code> instance cannot handle overlapping
+            operations</strong>.
+        </p>
+
+        <p class="mb-0">
+            Put another way: the scoped service is not automatically wrong, and dependency injection is not broken. The
+            problematic pattern is keeping one scoped <code>DbContext</code> inside a shared scoped service and then
+            calling it from several components at once.
+        </p>
+    </div>
+</div>
+
+<p>
+    If the exception does not appear on the first load, refresh the page. The demo already adds a small alignment
+    delay and a command interceptor delay to make the overlap more likely.
+</p>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+    <div class="col">
+        <ScopedUserLookupCard Title="Component A" UserId="1" />
+    </div>
+    <div class="col">
+        <ScopedUserLookupCard Title="Component B" UserId="2" />
+    </div>
+    <div class="col">
+        <ScopedUserLookupCard Title="Component C" UserId="3" />
+    </div>
+    <div class="col">
+        <ScopedUserLookupCard Title="Component D" UserId="4" />
+    </div>
+    <div class="col">
+        <ScopedUserLookupCard Title="Component E" UserId="5" />
+    </div>
+    <div class="col">
+        <ScopedUserLookupCard Title="Component F" UserId="6" />
+    </div>
+</div>

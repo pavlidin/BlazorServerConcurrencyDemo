@@ -1,0 +1,54 @@
+<div class="@CardCssClass">
+    <div class="card-body">
+        <h2 class="h5 card-title">@Title</h2>
+        <p class="text-muted mb-3">Calls <code>@($"{ServiceDisplayName}.FindUserByIdAsync({UserId})")</code> on initialize.</p>
+
+        @if (ErrorMessage is not null)
+        {
+            <div class="alert alert-danger mb-0">
+                <strong>Lookup failed.</strong>
+                <div class="small mt-2">@ErrorMessage</div>
+            </div>
+        }
+        else if (Result is null)
+        {
+            <p class="mb-0">Loading user...</p>
+        }
+        else
+        {
+            <dl class="row mb-0">
+                <dt class="col-sm-5">User</dt>
+                <dd class="col-sm-7">@((Result.Name ?? "Not found"))</dd>
+
+                <dt class="col-sm-5">Email</dt>
+                <dd class="col-sm-7">@((Result.Email ?? "-"))</dd>
+
+                <dt class="col-sm-5">Service ID</dt>
+                <dd class="col-sm-7"><code>@Result.ServiceInstanceId</code></dd>
+
+                <dt class="col-sm-5">DbContext ID</dt>
+                <dd class="col-sm-7"><code>@Result.DbContextInstanceId</code></dd>
+            </dl>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public int UserId { get; set; }
+
+    [Parameter, EditorRequired]
+    public string ServiceDisplayName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string CardCssClass { get; set; } = "card h-100 shadow-sm";
+
+    [Parameter]
+    public UserLookupResult? Result { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+}

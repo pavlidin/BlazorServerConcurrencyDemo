@@ -1,0 +1,67 @@
+﻿@page "/"
+
+<PageTitle>DbContext concurrency demo</PageTitle>
+
+<h1>DbContext concurrency demo</h1>
+
+<p class="lead">
+    This sample reproduces what happens when several interactive components call the same scoped user service,
+    and that service holds the same scoped EF Core <code>DbContext</code>. It also compares several safe ways to fix or
+    avoid the problem.
+</p>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 card-title">Scoped DbContext repro</h2>
+                <p class="card-text">
+                    Several child components call <code>FindUserByIdAsync</code> from <code>OnInitializedAsync</code>
+                    at the same time. Because they share one scoped service and one scoped <code>DbContext</code>,
+                    EF Core can throw its "second operation was started" concurrency exception.
+                </p>
+                <a class="btn btn-danger" href="scoped-dbcontext-repro">Open repro page</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 card-title">Factory comparison</h2>
+                <p class="card-text">
+                    The comparison page keeps the scoped service lifetime, but each lookup creates its own
+                    <code>DbContext</code> through <code>IDbContextFactory&lt;TContext&gt;</code>, so the same group
+                    of components can load concurrently without sharing one context instance.
+                </p>
+                <a class="btn btn-primary" href="dbcontext-factory-comparison">Open comparison page</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 card-title">Serialized shared context</h2>
+                <p class="card-text">
+                    This variant keeps one shared scoped service and one shared scoped <code>DbContext</code>, but the
+                    service uses a gate so only one EF operation runs at a time. Safe, but queued.
+                </p>
+                <a class="btn btn-info" href="serialized-scoped-dbcontext">Open serialized page</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 card-title">Component-owned scope</h2>
+                <p class="card-text">
+                    This variant keeps the service directly injecting <code>DbContext</code>, but each child component
+                    owns its own DI scope, so the scoped service and scoped context stop being shared across siblings.
+                </p>
+                <a class="btn btn-outline-primary" href="component-owned-scope">Open owned-scope page</a>
+            </div>
+        </div>
+    </div>
+</div>
