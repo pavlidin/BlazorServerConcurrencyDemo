@@ -1,7 +1,7 @@
-using ConcurrencyApp1.Models;
+using BlazorDbContextScopeDemo.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConcurrencyApp1.Data;
+namespace BlazorDbContextScopeDemo.Data;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

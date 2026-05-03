@@ -1,7 +1,7 @@
-using ConcurrencyApp1.Data;
+using BlazorDbContextScopeDemo.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConcurrencyApp1.Services;
+namespace BlazorDbContextScopeDemo.Services;
 
 public sealed class ScopedUserService(AppDbContext dbContext) : IScopedUserService
 {

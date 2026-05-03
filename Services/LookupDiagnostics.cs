@@ -1,4 +1,4 @@
-namespace ConcurrencyApp1.Services;
+namespace BlazorDbContextScopeDemo.Services;
 
 internal static class LookupDiagnostics
 {

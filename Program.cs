@@ -1,28 +1,18 @@
-using ConcurrencyApp1.Components;
-using ConcurrencyApp1.Data;
-using ConcurrencyApp1.Services;
+using BlazorDbContextScopeDemo.Components;
+using BlazorDbContextScopeDemo.Data;
+using BlazorDbContextScopeDemo.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var databasePath = Path.Combine(builder.Environment.ContentRootPath, "concurrency-demo.db");
+var databasePath = Path.Combine(builder.Environment.ContentRootPath, "dbcontext-scope-demo.db");
 var connectionString = $"Data Source={databasePath}";
 
-builder.Services.AddSingleton<DelayCommandInterceptor>();
-builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
-{
-    options.UseSqlite(connectionString);
-    options.AddInterceptors(serviceProvider.GetRequiredService<DelayCommandInterceptor>());
-});
-builder.Services.AddDbContextFactory<AppDbContext>((serviceProvider, options) =>
-{
-    options.UseSqlite(connectionString);
-    options.AddInterceptors(serviceProvider.GetRequiredService<DelayCommandInterceptor>());
-}, ServiceLifetime.Scoped);
+builder.Services.AddSingleton<QueryDelayInterceptor>();
+AddDemoDataAccess(builder.Services, connectionString);
 
 builder.Services.AddScoped<IScopedUserService, ScopedUserService>();
 builder.Services.AddScoped<IFactoryUserService, FactoryUserService>();
@@ -32,16 +22,14 @@ var app = builder.Build();
 
 await DbInitializer.InitializeAsync(app.Services);
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
-
 app.UseAntiforgery();
 
 app.MapStaticAssets();
@@ -49,3 +37,22 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 await app.RunAsync();
+
+static void AddDemoDataAccess(IServiceCollection services, string connectionString)
+{
+    services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+        ConfigureDataAccess(options, serviceProvider, connectionString));
+
+    services.AddDbContextFactory<AppDbContext>((serviceProvider, options) =>
+        ConfigureDataAccess(options, serviceProvider, connectionString), ServiceLifetime.Scoped);
+}
+
+static void ConfigureDataAccess(
+    DbContextOptionsBuilder options,
+    IServiceProvider serviceProvider,
+    string connectionString)
+{
+    options.UseSqlite(connectionString);
+    options.AddInterceptors(serviceProvider.GetRequiredService<QueryDelayInterceptor>());
+}
+

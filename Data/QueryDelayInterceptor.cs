@@ -1,9 +1,9 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace ConcurrencyApp1.Data;
+namespace BlazorDbContextScopeDemo.Data;
 
-public sealed class DelayCommandInterceptor : DbCommandInterceptor
+public sealed class QueryDelayInterceptor : DbCommandInterceptor
 {
     private static readonly TimeSpan QueryDelay = TimeSpan.FromMilliseconds(500);
 

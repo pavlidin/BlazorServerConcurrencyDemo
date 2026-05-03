@@ -1,4 +1,4 @@
-namespace ConcurrencyApp1.Services;
+namespace BlazorDbContextScopeDemo.Services;
 
 public interface IFactoryUserService
 {

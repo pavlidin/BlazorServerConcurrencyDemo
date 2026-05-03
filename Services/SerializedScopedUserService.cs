@@ -1,8 +1,7 @@
-using ConcurrencyApp1.Data;
+using BlazorDbContextScopeDemo.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 
-namespace ConcurrencyApp1.Services;
+namespace BlazorDbContextScopeDemo.Services;
 
 public sealed class SerializedScopedUserService(AppDbContext dbContext) : ISerializedScopedUserService, IDisposable
 {

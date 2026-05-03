@@ -1,4 +1,4 @@
-namespace ConcurrencyApp1.Models;
+namespace BlazorDbContextScopeDemo.Models;
 
 public sealed class AppUser
 {
